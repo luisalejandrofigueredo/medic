@@ -13,7 +13,6 @@ addRouter.post('/add', async (req, res) => {
     const { id, bloodPressureMax, bloodPressureMin, pulse } = req.body;
     const collection = conection_1.db.vitalSings;
     const doc = await collection.insert({ id: id, bloodPressureMax: bloodPressureMax, bloodPressureMin: bloodPressureMin, pulse: pulse });
-    console.log('add patient');
     res.status(200).json({ "message": "ok" });
 });
 addRouter.put('/put', async (req, res) => {

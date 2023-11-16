@@ -7,7 +7,7 @@ import cors from "cors";
 import {
   getRxStorageMemory
 } from 'rxdb/plugins/storage-memory';
-import { setDB,db } from "./conection";
+import { setDB,db } from "./connection";
 import {addRouter} from "./add"
 
 

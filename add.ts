@@ -1,5 +1,5 @@
 import express, { Request, Response } from 'express';
-import { db } from "./conection";
+import { db } from "./connection";
 import { RxDocument, isRxDocument } from "rxdb";
 
 const addRouter = express.Router();

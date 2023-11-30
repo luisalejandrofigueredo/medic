@@ -32,13 +32,17 @@ const http = __importStar(require("http"));
 const path = __importStar(require("path"));
 const socket_io_1 = require("socket.io");
 const cors_1 = __importDefault(require("cors"));
-const conection_1 = require("./conection");
-Object.defineProperty(exports, "db", { enumerable: true, get: function () { return conection_1.db; } });
+const connection_1 = require("./connection");
+Object.defineProperty(exports, "db", { enumerable: true, get: function () { return connection_1.db; } });
 const add_1 = require("./add");
 const app = (0, express_1.default)();
 const server = http.createServer(app);
-const io = new socket_io_1.Server(server, { cors: { origin: "http://localhost:4200",
-        credentials: true } });
+const io = new socket_io_1.Server(server, {
+    cors: {
+        origin: "http://localhost:4200",
+        credentials: true
+    }
+});
 const PORT = process.env.PORT || 3000;
 app.use(express_1.default.static(path.join(__dirname, 'public')));
 app.use(express_1.default.json());
@@ -49,10 +53,13 @@ app.get('/', (req, res) => {
 });
 // Start the server
 (async () => {
-    const setDb = await (0, conection_1.setDB)();
-    conection_1.db.vitalSings.$.subscribe((changeEvent) => {
+    const setDb = await (0, connection_1.setDB)();
+    connection_1.db.vitalSings.$.subscribe((changeEvent) => {
         io.emit('dataChange', changeEvent);
     });
+    connection_1.db.vitalSings.insert$.subscribe((insertEvent) => io.emit('insertRecord', insertEvent));
+    connection_1.db.vitalSings.update$.subscribe((updateEvent) => io.emit('updateRecord', updateEvent));
+    connection_1.db.vitalSings.remove$.subscribe((removeEvent) => io.emit('deleteRecord', removeEvent));
     server.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });

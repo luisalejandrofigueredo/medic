@@ -21,7 +21,15 @@ const initDatabase = async () => {
           properties: {
             id: {
               type: 'string',
-              maxLength: 100
+              maxLength: 100,
+            },
+            firstName:{
+              type:'string',
+              maxLength:50
+            },
+            lastName:{
+              type:'string',
+              maxLength:50
             },
             bloodPressureMax: {
               type: 'number'

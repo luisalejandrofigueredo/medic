@@ -7,8 +7,12 @@ const addRouter = express.Router();
 addRouter.post('/add', async (req: Request, res: Response) => {
   const { id, firstName,lastName,bloodPressureMax, bloodPressureMin, pulse } = req.body;
   const collection = db.vitalSings;
-  const doc = await collection.insert({ id: id,firstName:firstName ,lastName:lastName,bloodPressureMax: bloodPressureMax, bloodPressureMin: bloodPressureMin, pulse: pulse });
-  res.status(200).json({ "message": "ok" });
+  try {
+    const doc = await collection.insert({ id: id,firstName:firstName ,lastName:lastName,bloodPressureMax: bloodPressureMax, bloodPressureMin: bloodPressureMin, pulse: pulse });
+    res.status(200).json({ "message": "ok" });
+  } catch (error) {
+    res.status(204).json({ "message": "error" });
+  }
 })
 
 addRouter.put('/put', async (req: Request, res: Response) => {

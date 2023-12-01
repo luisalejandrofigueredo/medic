@@ -12,8 +12,13 @@ exports.addRouter = addRouter;
 addRouter.post('/add', async (req, res) => {
     const { id, firstName, lastName, bloodPressureMax, bloodPressureMin, pulse } = req.body;
     const collection = connection_1.db.vitalSings;
-    const doc = await collection.insert({ id: id, firstName: firstName, lastName: lastName, bloodPressureMax: bloodPressureMax, bloodPressureMin: bloodPressureMin, pulse: pulse });
-    res.status(200).json({ "message": "ok" });
+    try {
+        const doc = await collection.insert({ id: id, firstName: firstName, lastName: lastName, bloodPressureMax: bloodPressureMax, bloodPressureMin: bloodPressureMin, pulse: pulse });
+        res.status(200).json({ "message": "ok" });
+    }
+    catch (error) {
+        res.status(204).json({ "message": "error" });
+    }
 });
 addRouter.put('/put', async (req, res) => {
     const { id, bloodPressureMax, bloodPressureMin, pulse } = req.body;

@@ -3,14 +3,18 @@ import * as http from 'http';
 import * as path from 'path';
 import { Server, Socket } from 'socket.io';
 import { RxDocument, createRxDatabase } from 'rxdb';
+import { addRxPlugin } from 'rxdb';
+import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import cors from "cors";
 import {
   getRxStorageMemory
 } from 'rxdb/plugins/storage-memory';
 import { setDB, db } from "./connection";
-import { addRouter } from "./add"
+import { addRouter } from "./add";
+import { medicationRouter } from "./medication";
 
 
+addRxPlugin(RxDBDevModePlugin);
 const app: Express = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -25,6 +29,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use('/emergency', addRouter);
+app.use('/medication', medicationRouter);
 app.get('/', (req, res) => {
   res.send('emergency is up');
 });
@@ -33,12 +38,12 @@ app.get('/', (req, res) => {
 // Start the server
 (async () => {
   const setDb = await setDB();
-  db.vitalSings.$.subscribe((changeEvent: RxDocument) => {
+  db.vital_sings.$.subscribe((changeEvent: RxDocument) => {
     io.emit('dataChange', changeEvent);
   });
-  db.vitalSings.insert$.subscribe((insertEvent: RxDocument) => io.emit('insertRecord', insertEvent));
-  db.vitalSings.update$.subscribe((updateEvent: RxDocument) => io.emit('updateRecord', updateEvent));
-  db.vitalSings.remove$.subscribe((removeEvent: RxDocument) => io.emit('deleteRecord', removeEvent));
+  db.vital_sings.insert$.subscribe((insertEvent: RxDocument) => io.emit('insertRecord', insertEvent));
+  db.vital_sings.update$.subscribe((updateEvent: RxDocument) => io.emit('updateRecord', updateEvent));
+  db.vital_sings.remove$.subscribe((removeEvent: RxDocument) => io.emit('deleteRecord', removeEvent));
   server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });

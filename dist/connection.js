@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = exports.setDB = void 0;
 const rxdb_1 = require("rxdb");
 const storage_memory_1 = require("rxdb/plugins/storage-memory");
+const uuid_1 = require("uuid");
 let db;
 const initDatabase = async () => {
     const db = await (0, rxdb_1.createRxDatabase)({
@@ -11,7 +12,7 @@ const initDatabase = async () => {
     });
     // Create a collection with the specified schema
     await db.addCollections({
-        vitalSings: {
+        vital_sings: {
             schema: {
                 title: 'Vital sings',
                 version: 0,
@@ -43,6 +44,68 @@ const initDatabase = async () => {
                 },
                 required: ['id']
             },
+        },
+        medication: {
+            schema: {
+                title: 'Medication',
+                version: 0,
+                description: "Medication",
+                primaryKey: "id",
+                type: "object",
+                properties: {
+                    id: {
+                        type: "string",
+                        maxLength: 100,
+                    },
+                    idPatient: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    item: {
+                        type: "number",
+                        minimum: 0,
+                        maximum: 10000,
+                        multipleOf: 1
+                    },
+                    name: {
+                        type: 'string',
+                        maxLength: 50
+                    },
+                    canty: {
+                        type: 'string',
+                        maxLength: 50
+                    }
+                },
+                required: ['id', 'name'],
+                indexes: [
+                    'idPatient',
+                    ['idPatient', 'item'],
+                ]
+            },
+            statics: {
+                async insertWithUniqueKeyAndItemNumber(data) {
+                    return new Promise(async (resolve, reject) => {
+                        await this.find({ selector: { idPatient: data.idPatient }, sort: [{ item: 'des' }] }).exec().then(async (lastItem) => {
+                            const newItemNumber = lastItem.length !== 0 ? lastItem.length + 1 : 1;
+                            try {
+                                const newItem = await this.insert({
+                                    id: (0, uuid_1.v4)(),
+                                    idPatient: data.idPatient,
+                                    name: data.name,
+                                    canty: data.canty,
+                                    item: newItemNumber // Utiliza el número de ítem incremental
+                                });
+                                resolve(newItem._data);
+                            }
+                            catch (error) {
+                                reject(`error ${error}`);
+                            }
+                        }).catch((error) => {
+                            reject('error');
+                        });
+                    });
+                }
+            }
         }
     });
     return db;

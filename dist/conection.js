@@ -11,7 +11,7 @@ const initDatabase = async () => {
     });
     // Create a collection with the specified schema
     await db.addCollections({
-        vitalSings: {
+        vital_sings: {
             schema: {
                 title: 'Vital sings',
                 version: 0,

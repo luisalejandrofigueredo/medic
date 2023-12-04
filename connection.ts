@@ -77,7 +77,7 @@ const initDatabase = async () => {
             maxLength: 50
           }
         },
-        required: ['id', 'name'],
+        required: ['id','idPatient' ,'name'],
         indexes: [
           'idPatient', 
           ['idPatient', 'item'], 
@@ -99,7 +99,6 @@ const initDatabase = async () => {
                 resolve(newItem._data);
               } catch (error) {
                 reject(`error ${error}`)
-                
               }
             }).catch((error: any) => {
               reject('error')

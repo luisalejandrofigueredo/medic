@@ -76,7 +76,7 @@ const initDatabase = async () => {
                         maxLength: 50
                     }
                 },
-                required: ['id', 'name'],
+                required: ['id', 'idPatient', 'name'],
                 indexes: [
                     'idPatient',
                     ['idPatient', 'item'],

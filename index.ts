@@ -5,6 +5,7 @@ import { Server, Socket } from 'socket.io';
 import { RxDocument, createRxDatabase } from 'rxdb';
 import { addRxPlugin } from 'rxdb';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
+import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import cors from "cors";
 import {
   getRxStorageMemory
@@ -12,9 +13,11 @@ import {
 import { setDB, db } from "./connection";
 import { addRouter } from "./add";
 import { medicationRouter } from "./medication";
-
-
-addRxPlugin(RxDBDevModePlugin);
+import { env } from 'node:process';
+if (process.env.NODE_ENV==='development'){
+  addRxPlugin(RxDBDevModePlugin);
+}
+addRxPlugin(RxDBUpdatePlugin);
 const app: Express = express();
 const server = http.createServer(app);
 const io = new Server(server, {

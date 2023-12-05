@@ -5,12 +5,14 @@ const medicationRouter = express.Router();
 
 medicationRouter.delete('/delete', async (req: Request, res: Response) => {
   const id: string = req.query.id as string;
-  const collection: RxCollection = db.medication;
-  console.log(id);
+  const collection = db.medication;
   await collection.findOne(id).exec().then(async (document: RxDocument) => {
-    await document.remove().then((doc) => {
-      res.status(200).json(doc);
-    })
+    await document.remove().then(async (doc) => {
+      console.log('idPatient',doc.get("idPatient"))
+      await collection.renumber(doc.get("idPatient")).then((documents: RxDocument[]) => {
+        res.status(200).json(doc);
+      }).catch((_error: any) => { console.log('error en renumber') });
+    }).catch((error) => console.log('error'));
   });
 })
 
@@ -18,7 +20,6 @@ medicationRouter.delete('/delete', async (req: Request, res: Response) => {
 medicationRouter.post('/add', async (req: Request, res: Response) => {
   const { idPatient, name, canty } = req.body;
   const collection = db.medication;
-  console.log('entre a agregar medicamento');
   collection.insertWithUniqueKeyAndItemNumber({ idPatient: idPatient, name: name, canty: canty })
     .then((doc: any) => {
       res.status(200).json(doc);
@@ -32,7 +33,7 @@ medicationRouter.get('/getAll', async (req: Request, res: Response) => {
   const id: string = req.query.id as string;
   console.log('id', id);
   const collection = db.medication;
-  await collection.find({ selector: { idPatient: { $eq: id } } }).exec().then((documents: RxDocument[]) => {
+  await collection.find({ selector: { idPatient: { $eq: id } },sort:[ {item:'asc'}] }).exec().then((documents: RxDocument[]) => {
     res.status(200).json(documents);
   });
 })

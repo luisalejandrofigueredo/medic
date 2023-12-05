@@ -64,8 +64,8 @@ const initDatabase = async () => {
           },
           item: {
             type: "number",
-            minimum:0,
-            maximum:10000,
+            minimum: 0,
+            maximum: 10000,
             multipleOf: 1
           },
           name: {
@@ -77,10 +77,10 @@ const initDatabase = async () => {
             maxLength: 50
           }
         },
-        required: ['id','idPatient' ,'name'],
+        required: ['id', 'idPatient', 'name'],
         indexes: [
-          'idPatient', 
-          ['idPatient', 'item'], 
+          'idPatient',
+          ['idPatient', 'item'],
         ]
       },
       statics: {
@@ -104,9 +104,24 @@ const initDatabase = async () => {
               reject('error')
             });
           })
+        },
+        async renumber(uuid:string): Promise<any> {
+          return new Promise<any>(async (resolve, reject) => {
+            await this.find({ selector: { idPatient: uuid }, sort: [{ item: 'asc' }] }).exec().then(async (lastItem: RxDocument[]) => {
+              let num = 1;
+              lastItem.forEach((document) => {
+                document.update({ $set: { item: num } });
+                num++;
+              });
+              resolve(lastItem)
+            }).catch((error: any) => {
+              reject('error')
+            });
+          })
         }
       }
-    }});
+    }
+  });
   return db;
 };
 async function setDB() {

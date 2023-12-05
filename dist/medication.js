@@ -11,17 +11,18 @@ exports.medicationRouter = medicationRouter;
 medicationRouter.delete('/delete', async (req, res) => {
     const id = req.query.id;
     const collection = connection_1.db.medication;
-    console.log(id);
     await collection.findOne(id).exec().then(async (document) => {
-        await document.remove().then((doc) => {
-            res.status(200).json(doc);
-        });
+        await document.remove().then(async (doc) => {
+            console.log('idPatient', doc.get("idPatient"));
+            await collection.renumber(doc.get("idPatient")).then((documents) => {
+                res.status(200).json(doc);
+            }).catch((_error) => { console.log('error en renumber'); });
+        }).catch((error) => console.log('error'));
     });
 });
 medicationRouter.post('/add', async (req, res) => {
     const { idPatient, name, canty } = req.body;
     const collection = connection_1.db.medication;
-    console.log('entre a agregar medicamento');
     collection.insertWithUniqueKeyAndItemNumber({ idPatient: idPatient, name: name, canty: canty })
         .then((doc) => {
         res.status(200).json(doc);
@@ -34,7 +35,7 @@ medicationRouter.get('/getAll', async (req, res) => {
     const id = req.query.id;
     console.log('id', id);
     const collection = connection_1.db.medication;
-    await collection.find({ selector: { idPatient: { $eq: id } } }).exec().then((documents) => {
+    await collection.find({ selector: { idPatient: { $eq: id } }, sort: [{ item: 'asc' }] }).exec().then((documents) => {
         res.status(200).json(documents);
     });
 });

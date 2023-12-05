@@ -33,12 +33,16 @@ const path = __importStar(require("path"));
 const socket_io_1 = require("socket.io");
 const rxdb_1 = require("rxdb");
 const dev_mode_1 = require("rxdb/plugins/dev-mode");
+const update_1 = require("rxdb/plugins/update");
 const cors_1 = __importDefault(require("cors"));
 const connection_1 = require("./connection");
 Object.defineProperty(exports, "db", { enumerable: true, get: function () { return connection_1.db; } });
 const add_1 = require("./add");
 const medication_1 = require("./medication");
-(0, rxdb_1.addRxPlugin)(dev_mode_1.RxDBDevModePlugin);
+if (process.env.NODE_ENV === 'development') {
+    (0, rxdb_1.addRxPlugin)(dev_mode_1.RxDBDevModePlugin);
+}
+(0, rxdb_1.addRxPlugin)(update_1.RxDBUpdatePlugin);
 const app = (0, express_1.default)();
 const server = http.createServer(app);
 const io = new socket_io_1.Server(server, {

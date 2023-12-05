@@ -104,6 +104,20 @@ const initDatabase = async () => {
                             reject('error');
                         });
                     });
+                },
+                async renumber(uuid) {
+                    return new Promise(async (resolve, reject) => {
+                        await this.find({ selector: { idPatient: uuid }, sort: [{ item: 'asc' }] }).exec().then(async (lastItem) => {
+                            let num = 1;
+                            lastItem.forEach((document) => {
+                                document.update({ $set: { item: num } });
+                                num++;
+                            });
+                            resolve(lastItem);
+                        }).catch((error) => {
+                            reject('error');
+                        });
+                    });
                 }
             }
         }

@@ -21,9 +21,9 @@ medicationRouter.delete('/delete', async (req, res) => {
     });
 });
 medicationRouter.post('/add', async (req, res) => {
-    const { idPatient, name, canty } = req.body;
+    const { idPatient, name, canty, type, units } = req.body;
     const collection = connection_1.db.medication;
-    collection.insertWithUniqueKeyAndItemNumber({ idPatient: idPatient, name: name, canty: canty })
+    collection.insertWithUniqueKeyAndItemNumber({ idPatient: idPatient, name: name, canty: canty, type: type, units: units })
         .then((doc) => {
         res.status(200).json(doc);
     })

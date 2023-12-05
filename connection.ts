@@ -72,9 +72,17 @@ const initDatabase = async () => {
             type: 'string',
             maxLength: 50
           },
+          type:{
+            type:'string',
+            maxLength: 10
+          },
+          units:{
+            type:'string',
+            maxLength:10
+          },
           canty: {
-            type: 'string',
-            maxLength: 50
+            type: 'number',
+            maxLength: 10
           }
         },
         required: ['id', 'idPatient', 'name'],
@@ -92,6 +100,8 @@ const initDatabase = async () => {
                 const newItem = await this.insert({
                   id: uuidv4(),
                   idPatient: data.idPatient,
+                  type:data.type,
+                  units:data.units,
                   name: data.name,
                   canty: data.canty,
                   item: newItemNumber // Utiliza el número de ítem incremental

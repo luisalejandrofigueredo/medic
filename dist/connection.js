@@ -130,6 +130,81 @@ const initDatabase = async () => {
                     });
                 }
             }
+        },
+        history: {
+            schema: {
+                title: 'History',
+                version: 0,
+                description: "History",
+                primaryKey: "id",
+                type: "object",
+                properties: {
+                    id: {
+                        type: "string",
+                        maxLength: 100,
+                    },
+                    idPatient: {
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    item: {
+                        type: "number",
+                        minimum: 0,
+                        maximum: 10000,
+                        multipleOf: 1
+                    },
+                    date: {
+                        type: 'number',
+                    },
+                    history: {
+                        type: 'string',
+                        maxLength: 50000
+                    }
+                },
+                required: ['id', 'idPatient'],
+                indexes: [
+                    'idPatient',
+                    ['idPatient', 'item'],
+                ]
+            },
+            statics: {
+                async insertWithUniqueKeyAndItemNumber(data) {
+                    return new Promise(async (resolve, reject) => {
+                        await this.find({ selector: { idPatient: data.idPatient }, sort: [{ item: 'des' }] }).exec().then(async (lastItem) => {
+                            const newItemNumber = lastItem.length !== 0 ? lastItem.length + 1 : 1;
+                            try {
+                                const newItem = await this.insert({
+                                    id: (0, uuid_1.v4)(),
+                                    idPatient: data.idPatient,
+                                    date: data.date,
+                                    history: data.history,
+                                    item: newItemNumber // Utiliza el número de ítem incremental
+                                });
+                                resolve(newItem._data);
+                            }
+                            catch (error) {
+                                reject(`error ${error}`);
+                            }
+                        }).catch((error) => {
+                            reject('error');
+                        });
+                    });
+                },
+                async renumber(uuid) {
+                    return new Promise(async (resolve, reject) => {
+                        await this.find({ selector: { idPatient: uuid }, sort: [{ item: 'asc' }] }).exec().then(async (lastItem) => {
+                            let num = 1;
+                            lastItem.forEach((document) => {
+                                document.update({ $set: { item: num } });
+                                num++;
+                            });
+                            resolve(lastItem);
+                        }).catch((error) => {
+                            reject('error');
+                        });
+                    });
+                }
+            }
         }
     });
     return db;

@@ -13,12 +13,41 @@ import {
 import { setDB, db } from "./connection";
 import { addRouter } from "./add";
 import { medicationRouter } from "./medication";
-import { env } from 'node:process';
+import { historyRouter } from "./history";
+const macaddress = require('macaddress');
+
 if (process.env.NODE_ENV==='development'){
   addRxPlugin(RxDBDevModePlugin);
 }
 addRxPlugin(RxDBUpdatePlugin);
 const app: Express = express();
+
+app.use((req:Request, res:Response, next) => {
+  // Obtener la dirección MAC del cliente
+  macaddress.one((err:any, mac:string) => {
+    console.log('mac:',mac)
+    if (err) {
+      console.error(err);
+      // Puedes decidir rechazar la conexión si hay un error al obtener la MAC
+      console.log('Error al obtener la dirección MAC')
+      res.status(500).send('Error al obtener la dirección MAC');
+    } else {
+      // Verificar si la dirección MAC está permitida
+      const allowedMAC = '6c:3b:e5:25:d0:37'; // MAC permitida (ejemplo)
+      if (mac === allowedMAC) {
+        // Continuar con la solicitud si la MAC está permitida
+        next();
+      } else {
+        // Rechazar la conexión si la MAC no está permitida
+        console.log('Acceso denegado')
+        res.status(403).send('Acceso denegado');
+      }
+    }
+  });
+});
+
+
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -27,12 +56,15 @@ const io = new Server(server, {
   }
 });
 
+
+
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cors({ origin: '*' }));
 app.use('/emergency', addRouter);
 app.use('/medication', medicationRouter);
+app.use('/history', historyRouter);
 app.get('/', (req, res) => {
   res.send('emergency is up');
 });

@@ -18,11 +18,13 @@ addRouter.post('/add', async (req: Request, res: Response) => {
 })
 
 addRouter.put('/put', async (req: Request, res: Response) => {
-  const { id, bloodPressureMax, bloodPressureMin, pulse } = req.body;
+  const { id, firstName:firstName ,lastName:lastName,bloodPressureMax, bloodPressureMin, pulse } = req.body;
   const collection = db.vital_sings;
   let document: RxDocument = await collection.findOne(id).exec();
   if (isRxDocument(document)) {
     document.patch({
+      firstName:firstName,
+      lastName:lastName,
       bloodPressureMin: bloodPressureMin,
       bloodPressureMax: bloodPressureMax,
       pulse: pulse

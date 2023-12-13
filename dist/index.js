@@ -40,12 +40,14 @@ Object.defineProperty(exports, "db", { enumerable: true, get: function () { retu
 const add_1 = require("./add");
 const medication_1 = require("./medication");
 const history_1 = require("./history");
+const fs = require('fs/promises');
 const macaddress = require('macaddress');
 if (process.env.NODE_ENV === 'development') {
     (0, rxdb_1.addRxPlugin)(dev_mode_1.RxDBDevModePlugin);
 }
 (0, rxdb_1.addRxPlugin)(update_1.RxDBUpdatePlugin);
 const app = (0, express_1.default)();
+let allowedMACs = [];
 app.use((req, res, next) => {
     // Obtener la dirección MAC del cliente
     macaddress.one((err, mac) => {
@@ -58,8 +60,7 @@ app.use((req, res, next) => {
         }
         else {
             // Verificar si la dirección MAC está permitida
-            const allowedMAC = '6c:3b:e5:25:d0:37'; // MAC permitida (ejemplo)
-            if (mac === allowedMAC) {
+            if (allowedMACs.find((macaddr) => { return mac === macaddr.macaddress; }) !== undefined) {
                 // Continuar con la solicitud si la MAC está permitida
                 next();
             }
@@ -91,6 +92,13 @@ app.get('/', (req, res) => {
 // Start the server
 (async () => {
     const setDb = await (0, connection_1.setDB)();
+    fs.readFile('macaddress.json', 'utf8')
+        .then((data) => {
+        allowedMACs = JSON.parse(data).address;
+    })
+        .catch((_error) => {
+        // Do something if error 
+    });
     connection_1.db.vital_sings.$.subscribe((changeEvent) => {
         io.emit('dataChange', changeEvent);
     });

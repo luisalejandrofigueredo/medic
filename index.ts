@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from 'express';
+import express, { Express, Request, Response, json } from 'express';
 import * as http from 'http';
 import * as path from 'path';
 import { Server, Socket } from 'socket.io';
@@ -14,6 +14,9 @@ import { setDB, db } from "./connection";
 import { addRouter } from "./add";
 import { medicationRouter } from "./medication";
 import { historyRouter } from "./history";
+const fs = require('fs/promises');
+
+
 const macaddress = require('macaddress');
 
 if (process.env.NODE_ENV==='development'){
@@ -21,6 +24,7 @@ if (process.env.NODE_ENV==='development'){
 }
 addRxPlugin(RxDBUpdatePlugin);
 const app: Express = express();
+let allowedMACs:{macaddress:string}[]=[];
 
 app.use((req:Request, res:Response, next) => {
   // Obtener la dirección MAC del cliente
@@ -33,8 +37,8 @@ app.use((req:Request, res:Response, next) => {
       res.status(500).send('Error al obtener la dirección MAC');
     } else {
       // Verificar si la dirección MAC está permitida
-      const allowedMAC = '6c:3b:e5:25:d0:37'; // MAC permitida (ejemplo)
-      if (mac === allowedMAC) {
+     
+      if (allowedMACs.find((macaddr)=>{ return mac=== macaddr.macaddress})!==undefined) {
         // Continuar con la solicitud si la MAC está permitida
         next();
       } else {
@@ -73,6 +77,13 @@ app.get('/', (req, res) => {
 // Start the server
 (async () => {
   const setDb = await setDB();
+  fs.readFile('macaddress.json','utf8')
+  .then((data: any) => {
+    allowedMACs=JSON.parse(data).address;
+  })
+  .catch((_error: any) => {
+    // Do something if error 
+  });
   db.vital_sings.$.subscribe((changeEvent: RxDocument) => {
     io.emit('dataChange', changeEvent);
   });

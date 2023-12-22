@@ -41,6 +41,11 @@ const initDatabase = async () => {
           },
           pulse: {
             type: 'number'
+          },
+          oxygen: {
+            type: 'number',
+            maximum: 100,
+            minimum: 0
           }
         },
         required: ['id']
@@ -72,17 +77,20 @@ const initDatabase = async () => {
             type: 'string',
             maxLength: 50
           },
-          type:{
-            type:'string',
+          type: {
+            type: 'string',
             maxLength: 10
           },
-          units:{
-            type:'string',
-            maxLength:10
+          units: {
+            type: 'string',
+            maxLength: 10
           },
           canty: {
             type: 'number',
             maxLength: 10
+          },
+          hora: {
+            type: "number"
           }
         },
         required: ['id', 'idPatient', 'name'],
@@ -100,10 +108,12 @@ const initDatabase = async () => {
                 const newItem = await this.insert({
                   id: uuidv4(),
                   idPatient: data.idPatient,
-                  type:data.type,
-                  units:data.units,
+                  type: data.type,
+                  units: data.units,
                   name: data.name,
                   canty: data.canty,
+                  hora: data.hora,
+                  oxygen: data.oxygen,
                   item: newItemNumber // Utiliza el número de ítem incremental
                 });
                 resolve(newItem._data);
@@ -115,7 +125,7 @@ const initDatabase = async () => {
             });
           })
         },
-        async renumber(uuid:string): Promise<any> {
+        async renumber(uuid: string): Promise<any> {
           return new Promise<any>(async (resolve, reject) => {
             await this.find({ selector: { idPatient: uuid }, sort: [{ item: 'asc' }] }).exec().then(async (lastItem: RxDocument[]) => {
               let num = 1;
@@ -156,9 +166,9 @@ const initDatabase = async () => {
           date: {
             type: 'number',
           },
-          history:{
-            type:'string',
-            maxLength:50000
+          history: {
+            type: 'string',
+            maxLength: 50000
           }
         },
         required: ['id', 'idPatient'],
@@ -176,8 +186,8 @@ const initDatabase = async () => {
                 const newItem = await this.insert({
                   id: uuidv4(),
                   idPatient: data.idPatient,
-                  date:data.date,
-                  history:data.history,
+                  date: data.date,
+                  history: data.history,
                   item: newItemNumber // Utiliza el número de ítem incremental
                 });
                 resolve(newItem._data);
@@ -189,7 +199,7 @@ const initDatabase = async () => {
             });
           })
         },
-        async renumber(uuid:string): Promise<any> {
+        async renumber(uuid: string): Promise<any> {
           return new Promise<any>(async (resolve, reject) => {
             await this.find({ selector: { idPatient: uuid }, sort: [{ item: 'asc' }] }).exec().then(async (lastItem: RxDocument[]) => {
               let num = 1;
@@ -201,6 +211,100 @@ const initDatabase = async () => {
             }).catch((error: any) => {
               reject('error')
             });
+          })
+        }
+      }
+    },
+    group: {
+      schema: {
+        title: 'Group',
+        version: 0,
+        description: "Group chat",
+        primaryKey: "uid",
+        type: "object",
+        properties: {
+          uid: {
+            type: "string",
+            maxLength: 100
+          },
+          name: {
+            type: "string",
+            maxLength: 100
+          },
+          avatar: {
+            type: "string",
+            maxLength: 100
+          }
+        },
+        required: ['uid', 'name'],
+        indexes: ['name']
+      },
+      statics: {
+        insertUser(uid: string, name: string, avatar: string): Promise<any> {
+          return new Promise<any>(async (resolve, reject) => {
+            try {
+              const newUser: RxDocument = await this.insert({
+                uid: uid,
+                name: name,
+                avatar: avatar
+              })
+              resolve(newUser.toJSON())
+            } catch (error) {
+              reject(`error ${error}`)
+            }
+          })
+        }
+      }
+    },
+    message: {
+      schema: {
+        title: 'Messages',
+        version: 0,
+        description: "chat messages",
+        primaryKey: "id",
+        type: "object",
+        properties: {
+          id: {
+            type: "string",
+            maxLength: 100,
+          },
+          from: {
+            type: "string",
+            maxLength: 100,
+          },
+          to: {
+            type: "string",
+            maxLength: 100
+          },
+          hour: {
+            type: "number",
+            minimum:0,
+            maximum:100000000000000,
+            multipleOf:.001
+          },
+          message: {
+            type: "string",
+            maxLength: 100
+          }
+        },
+        required: [],
+        indexes: ['from','to','hour',['to','from','hour']]
+      },
+      statics: {
+        insertMessage(hour: string, from: string, to: string, message: string): Promise<any> {
+          return new Promise<any>(async (resolve, reject) => {
+            try {
+              const newMessage: RxDocument = await this.insert({
+                "id": uuidv4(),
+                "from": from,
+                "to": to,
+                "message": message,
+                "hour": hour,
+              })
+              resolve(newMessage)
+            } catch (error) {
+              reject(`error ${error}`)
+            }
           })
         }
       }

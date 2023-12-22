@@ -40,14 +40,22 @@ Object.defineProperty(exports, "db", { enumerable: true, get: function () { retu
 const add_1 = require("./add");
 const medication_1 = require("./medication");
 const history_1 = require("./history");
+const chat_1 = require("./chat");
+const message_1 = require("./message");
+const query_builder_1 = require("rxdb/plugins/query-builder");
+const auth_1 = require("firebase/auth");
+const admin = __importStar(require("firebase-admin"));
+require("firebase/auth");
 const fs = require('fs/promises');
 const macaddress = require('macaddress');
 if (process.env.NODE_ENV === 'development') {
     (0, rxdb_1.addRxPlugin)(dev_mode_1.RxDBDevModePlugin);
 }
 (0, rxdb_1.addRxPlugin)(update_1.RxDBUpdatePlugin);
+(0, rxdb_1.addRxPlugin)(query_builder_1.RxDBQueryBuilderPlugin);
 const app = (0, express_1.default)();
 let allowedMACs = [];
+const serviceAccount = require('./serviceAccountKey.json');
 app.use((req, res, next) => {
     // Obtener la dirección MAC del cliente
     macaddress.one((err, mac) => {
@@ -59,7 +67,7 @@ app.use((req, res, next) => {
             res.status(500).send('Error al obtener la dirección MAC');
         }
         else {
-            // Verificar si la dirección MAC está permitida
+            // Verificar si la dirección MAC está permitida   
             if (allowedMACs.find((macaddr) => { return mac === macaddr.macaddress; }) !== undefined) {
                 // Continuar con la solicitud si la MAC está permitida
                 next();
@@ -72,6 +80,29 @@ app.use((req, res, next) => {
         }
     });
 });
+const authenticateUser = async (req, res, next) => {
+    let idToken = req.headers.authorization;
+    if (!idToken) {
+        console.log('-------------sin token');
+        return res.status(403).send('Unauthorized');
+    }
+    else {
+        try {
+            idToken = idToken.slice(7);
+            console.log('id token', idToken);
+            await admin.auth().verifyIdToken(idToken);
+            next();
+        }
+        catch (error) {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log('error', errorMessage);
+            const credential = auth_1.GoogleAuthProvider.credentialFromError(error);
+            // ...
+            res.status(403).send('Acceso denegado');
+        }
+    }
+};
 const server = http.createServer(app);
 const io = new socket_io_1.Server(server, {
     cors: {
@@ -86,11 +117,20 @@ app.use((0, cors_1.default)({ origin: '*' }));
 app.use('/emergency', add_1.addRouter);
 app.use('/medication', medication_1.medicationRouter);
 app.use('/history', history_1.historyRouter);
-app.get('/', (req, res) => {
-    res.send('emergency is up');
+app.use('/chat', chat_1.chatRouter);
+app.use('/message', message_1.messageRouter);
+app.get('/', authenticateUser, (req, res) => {
+    // La solicitud solo llega aquí si la autenticación es exitosa
+    res.status(403).send('Hola mundo');
 });
 // Start the server
 (async () => {
+    try {
+        const appFirebaseAuth = admin.initializeApp(serviceAccount);
+    }
+    catch (error) {
+        console.log('error', error);
+    }
     const setDb = await (0, connection_1.setDB)();
     fs.readFile('macaddress.json', 'utf8')
         .then((data) => {
@@ -105,6 +145,7 @@ app.get('/', (req, res) => {
     connection_1.db.vital_sings.insert$.subscribe((insertEvent) => io.emit('insertRecord', insertEvent));
     connection_1.db.vital_sings.update$.subscribe((updateEvent) => io.emit('updateRecord', updateEvent));
     connection_1.db.vital_sings.remove$.subscribe((removeEvent) => io.emit('deleteRecord', removeEvent));
+    connection_1.db.message.insert$.subscribe((newChatEvent) => io.emit('newChat', newChatEvent));
     server.listen(PORT, () => {
         console.log(`Server is running on port ${PORT}`);
     });

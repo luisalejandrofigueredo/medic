@@ -11,11 +11,13 @@ const uuid_1 = require("uuid");
 const addRouter = express_1.default.Router();
 exports.addRouter = addRouter;
 addRouter.post('/add', async (req, res) => {
-    const { firstName, lastName, bloodPressureMax, bloodPressureMin, pulse } = req.body;
+    let { firstName, lastName, bloodPressureMax, bloodPressureMin, pulse, oxygen } = req.body;
+    firstName = decodeURI(firstName);
+    lastName = decodeURI(lastName);
     const collection = connection_1.db.vital_sings;
     try {
         const id = (0, uuid_1.v4)();
-        const doc = await collection.insert({ id: (0, uuid_1.v4)(), firstName: firstName, lastName: lastName, bloodPressureMax: bloodPressureMax, bloodPressureMin: bloodPressureMin, pulse: pulse });
+        const doc = await collection.insert({ id: (0, uuid_1.v4)(), firstName: firstName, lastName: lastName, bloodPressureMax: bloodPressureMax, bloodPressureMin: bloodPressureMin, pulse: pulse, oxygen: oxygen });
         console.log('id:', id);
         res.status(200).json({ "message": "ok" });
     }
@@ -24,7 +26,9 @@ addRouter.post('/add', async (req, res) => {
     }
 });
 addRouter.put('/put', async (req, res) => {
-    const { id, firstName: firstName, lastName: lastName, bloodPressureMax, bloodPressureMin, pulse } = req.body;
+    let { id, firstName: firstName, lastName: lastName, bloodPressureMax, bloodPressureMin, pulse, oxygen } = req.body;
+    firstName = decodeURI(firstName);
+    lastName = decodeURI(lastName);
     const collection = connection_1.db.vital_sings;
     let document = await collection.findOne(id).exec();
     if ((0, rxdb_1.isRxDocument)(document)) {
@@ -33,7 +37,8 @@ addRouter.put('/put', async (req, res) => {
             lastName: lastName,
             bloodPressureMin: bloodPressureMin,
             bloodPressureMax: bloodPressureMax,
-            pulse: pulse
+            pulse: pulse,
+            oxygen: oxygen
         });
     }
     res.status(200).json({ "message": "ok" });

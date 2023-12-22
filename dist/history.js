@@ -14,7 +14,6 @@ historyRouter.delete('/delete', async (req, res) => {
     const collection = connection_1.db.history;
     await collection.findOne(id).exec().then(async (document) => {
         await document.remove().then(async (doc) => {
-            console.log('idPatient', doc.get("idPatient"));
             await collection.renumber(doc.get("idPatient")).then((documents) => {
                 res.status(200).json(doc);
             }).catch((_error) => { console.log('error en renumber'); });
@@ -34,7 +33,6 @@ historyRouter.post('/add', async (req, res) => {
 });
 historyRouter.get('/getAll', async (req, res) => {
     const id = req.query.id;
-    console.log('get all history id', id);
     const collection = connection_1.db.history;
     await collection.find({ selector: { idPatient: { $eq: id } }, sort: [{ item: 'asc' }] }).exec().then((documents) => {
         res.status(200).json(documents);

@@ -40,6 +40,11 @@ const initDatabase = async () => {
                     },
                     pulse: {
                         type: 'number'
+                    },
+                    oxygen: {
+                        type: 'number',
+                        maximum: 100,
+                        minimum: 0
                     }
                 },
                 required: ['id']
@@ -82,6 +87,9 @@ const initDatabase = async () => {
                     canty: {
                         type: 'number',
                         maxLength: 10
+                    },
+                    hora: {
+                        type: "number"
                     }
                 },
                 required: ['id', 'idPatient', 'name'],
@@ -103,6 +111,8 @@ const initDatabase = async () => {
                                     units: data.units,
                                     name: data.name,
                                     canty: data.canty,
+                                    hora: data.hora,
+                                    oxygen: data.oxygen,
                                     item: newItemNumber // Utiliza el número de ítem incremental
                                 });
                                 resolve(newItem._data);
@@ -202,6 +212,102 @@ const initDatabase = async () => {
                         }).catch((error) => {
                             reject('error');
                         });
+                    });
+                }
+            }
+        },
+        group: {
+            schema: {
+                title: 'Group',
+                version: 0,
+                description: "Group chat",
+                primaryKey: "uid",
+                type: "object",
+                properties: {
+                    uid: {
+                        type: "string",
+                        maxLength: 100
+                    },
+                    name: {
+                        type: "string",
+                        maxLength: 100
+                    },
+                    avatar: {
+                        type: "string",
+                        maxLength: 100
+                    }
+                },
+                required: ['uid', 'name'],
+                indexes: ['name']
+            },
+            statics: {
+                insertUser(uid, name, avatar) {
+                    return new Promise(async (resolve, reject) => {
+                        try {
+                            const newUser = await this.insert({
+                                uid: uid,
+                                name: name,
+                                avatar: avatar
+                            });
+                            resolve(newUser.toJSON());
+                        }
+                        catch (error) {
+                            reject(`error ${error}`);
+                        }
+                    });
+                }
+            }
+        },
+        message: {
+            schema: {
+                title: 'Messages',
+                version: 0,
+                description: "chat messages",
+                primaryKey: "id",
+                type: "object",
+                properties: {
+                    id: {
+                        type: "string",
+                        maxLength: 100,
+                    },
+                    from: {
+                        type: "string",
+                        maxLength: 100,
+                    },
+                    to: {
+                        type: "string",
+                        maxLength: 100
+                    },
+                    hour: {
+                        type: "number",
+                        minimum: 0,
+                        maximum: 100000000000000,
+                        multipleOf: .001
+                    },
+                    message: {
+                        type: "string",
+                        maxLength: 100
+                    }
+                },
+                required: [],
+                indexes: ['from', 'to', 'hour', ['to', 'from', 'hour']]
+            },
+            statics: {
+                insertMessage(hour, from, to, message) {
+                    return new Promise(async (resolve, reject) => {
+                        try {
+                            const newMessage = await this.insert({
+                                "id": (0, uuid_1.v4)(),
+                                "from": from,
+                                "to": to,
+                                "message": message,
+                                "hour": hour,
+                            });
+                            resolve(newMessage);
+                        }
+                        catch (error) {
+                            reject(`error ${error}`);
+                        }
                     });
                 }
             }

@@ -8,7 +8,6 @@ historyRouter.delete('/delete', async (req: Request, res: Response) => {
   const collection = db.history;
   await collection.findOne(id).exec().then(async (document: RxDocument) => {
     await document.remove().then(async (doc) => {
-      console.log('idPatient',doc.get("idPatient"))
       await collection.renumber(doc.get("idPatient")).then((documents: RxDocument[]) => {
         res.status(200).json(doc);
       }).catch((_error: any) => { console.log('error en renumber') });
@@ -31,7 +30,6 @@ historyRouter.post('/add', async (req: Request, res: Response) => {
 
 historyRouter.get('/getAll', async (req: Request, res: Response) => {
   const id: string = req.query.id as string;
-  console.log('get all history id', id);
   const collection = db.history;
   await collection.find({ selector: { idPatient: { $eq: id } },sort:[ {item:'asc'}] }).exec().then((documents: RxDocument[]) => {
     res.status(200).json(documents);

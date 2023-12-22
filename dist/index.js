@@ -83,13 +83,12 @@ app.use((req, res, next) => {
 const authenticateUser = async (req, res, next) => {
     let idToken = req.headers.authorization;
     if (!idToken) {
-        console.log('-------------sin token');
+        console.log('---sin token----');
         return res.status(403).send('Unauthorized');
     }
     else {
         try {
             idToken = idToken.slice(7);
-            console.log('id token', idToken);
             await admin.auth().verifyIdToken(idToken);
             next();
         }
@@ -99,7 +98,7 @@ const authenticateUser = async (req, res, next) => {
             console.log('error', errorMessage);
             const credential = auth_1.GoogleAuthProvider.credentialFromError(error);
             // ...
-            res.status(403).send('Acceso denegado');
+            return res.status(403).send('Acceso denegado');
         }
     }
 };
@@ -114,13 +113,12 @@ const PORT = process.env.PORT || 3000;
 app.use(express_1.default.static(path.join(__dirname, 'public')));
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({ origin: '*' }));
-app.use('/emergency', add_1.addRouter);
-app.use('/medication', medication_1.medicationRouter);
-app.use('/history', history_1.historyRouter);
-app.use('/chat', chat_1.chatRouter);
-app.use('/message', message_1.messageRouter);
+app.use('/emergency', authenticateUser, add_1.addRouter);
+app.use('/medication', authenticateUser, medication_1.medicationRouter);
+app.use('/history', authenticateUser, history_1.historyRouter);
+app.use('/chat', authenticateUser, chat_1.chatRouter);
+app.use('/message', authenticateUser, message_1.messageRouter);
 app.get('/', authenticateUser, (req, res) => {
-    // La solicitud solo llega aquí si la autenticación es exitosa
     res.status(403).send('Hola mundo');
 });
 // Start the server

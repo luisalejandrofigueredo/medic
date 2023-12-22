@@ -72,13 +72,12 @@ const authenticateUser = async (
   let idToken = req.headers.authorization
 
   if (!idToken) {
-    console.log('-------------sin token');
+    console.log('---sin token----');
     return res.status(403).send('Unauthorized');
   }
   else {
     try {
       idToken=idToken.slice(7);
-      console.log('id token',idToken)
       await admin.auth().verifyIdToken(idToken!)
       next();
     } catch (error: any) {
@@ -87,7 +86,7 @@ const authenticateUser = async (
       console.log('error', errorMessage)
       const credential = GoogleAuthProvider.credentialFromError(error);
       // ...
-      res.status(403).send('Acceso denegado');
+      return res.status(403).send('Acceso denegado');
     }
   }
 }
@@ -107,13 +106,13 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cors({ origin: '*' }));
-app.use('/emergency', addRouter);
-app.use('/medication', medicationRouter);
-app.use('/history', historyRouter);
-app.use('/chat', chatRouter);
-app.use('/message', messageRouter);
+app.use('/emergency',authenticateUser, addRouter);
+app.use('/medication',authenticateUser, medicationRouter);
+app.use('/history',authenticateUser, historyRouter);
+app.use('/chat', authenticateUser,chatRouter);
+app.use('/message', authenticateUser,messageRouter);
 app.get('/', authenticateUser, (req: ExtendedRequest, res) => {
-    res.status(403).send('Hola mundo');
+    res.status(403).send('Server is up');
 });
 
 // Start the server

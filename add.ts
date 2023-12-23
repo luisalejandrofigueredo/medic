@@ -2,9 +2,9 @@ import express, { Request, Response } from 'express';
 import { db } from "./connection";
 import { RxCollection, RxDocument, isRxDocument } from "rxdb";
 import { v4 as uuidv4 } from 'uuid';
-const addRouter = express.Router();
+const emergenRouter = express.Router();
 
-addRouter.post('/add', async (req: Request, res: Response) => {
+emergenRouter.post('/add', async (req: Request, res: Response) => {
   let { firstName, lastName, bloodPressureMax, bloodPressureMin, pulse, oxygen } = req.body;
   firstName=decodeURI(firstName);
   lastName=decodeURI(lastName);
@@ -19,7 +19,7 @@ addRouter.post('/add', async (req: Request, res: Response) => {
   }
 })
 
-addRouter.put('/put', async (req: Request, res: Response) => {
+emergenRouter.put('/put', async (req: Request, res: Response) => {
   let  { id, firstName:firstName ,lastName:lastName,bloodPressureMax, bloodPressureMin, pulse,oxygen } = req.body;
   firstName=decodeURI(firstName);
   lastName=decodeURI(lastName);
@@ -38,7 +38,7 @@ addRouter.put('/put', async (req: Request, res: Response) => {
   res.status(200).json({ "message": "ok" });
 })
 
-addRouter.get('/getOne', async (req: Request, res: Response) => {
+emergenRouter.get('/getOne', async (req: Request, res: Response) => {
   const id: string = req.query.id as string;
   const collection: RxCollection = db.vital_sings;
   await collection.findOne(id).exec().then((document: RxDocument) => {
@@ -47,7 +47,7 @@ addRouter.get('/getOne', async (req: Request, res: Response) => {
 })
 
 
-addRouter.delete('/delete', async (req: Request, res: Response) => {
+emergenRouter.delete('/delete', async (req: Request, res: Response) => {
   const id: string = req.query.id as string;
   const collection: RxCollection = db.vital_sings;
   await collection.findOne(id).exec().then(async (document: RxDocument) => {
@@ -58,11 +58,11 @@ addRouter.delete('/delete', async (req: Request, res: Response) => {
 })
 
 
-addRouter.get('/getAll', async (req: Request, res: Response) => {
+emergenRouter.get('/getAll', async (req: Request, res: Response) => {
   const collection = db.vital_sings;
   await collection.find().exec().then((documents: RxDocument[]) => {
     res.status(200).json(documents);
   });
 })
 
-export { addRouter };
+export { emergenRouter };

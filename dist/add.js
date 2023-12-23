@@ -3,14 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addRouter = void 0;
+exports.emergenRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const connection_1 = require("./connection");
 const rxdb_1 = require("rxdb");
 const uuid_1 = require("uuid");
-const addRouter = express_1.default.Router();
-exports.addRouter = addRouter;
-addRouter.post('/add', async (req, res) => {
+const emergenRouter = express_1.default.Router();
+exports.emergenRouter = emergenRouter;
+emergenRouter.post('/add', async (req, res) => {
     let { firstName, lastName, bloodPressureMax, bloodPressureMin, pulse, oxygen } = req.body;
     firstName = decodeURI(firstName);
     lastName = decodeURI(lastName);
@@ -25,7 +25,7 @@ addRouter.post('/add', async (req, res) => {
         res.status(204).json({ "message": "error" });
     }
 });
-addRouter.put('/put', async (req, res) => {
+emergenRouter.put('/put', async (req, res) => {
     let { id, firstName: firstName, lastName: lastName, bloodPressureMax, bloodPressureMin, pulse, oxygen } = req.body;
     firstName = decodeURI(firstName);
     lastName = decodeURI(lastName);
@@ -43,14 +43,14 @@ addRouter.put('/put', async (req, res) => {
     }
     res.status(200).json({ "message": "ok" });
 });
-addRouter.get('/getOne', async (req, res) => {
+emergenRouter.get('/getOne', async (req, res) => {
     const id = req.query.id;
     const collection = connection_1.db.vital_sings;
     await collection.findOne(id).exec().then((document) => {
         res.status(200).json(document);
     });
 });
-addRouter.delete('/delete', async (req, res) => {
+emergenRouter.delete('/delete', async (req, res) => {
     const id = req.query.id;
     const collection = connection_1.db.vital_sings;
     await collection.findOne(id).exec().then(async (document) => {
@@ -59,7 +59,7 @@ addRouter.delete('/delete', async (req, res) => {
         });
     });
 });
-addRouter.get('/getAll', async (req, res) => {
+emergenRouter.get('/getAll', async (req, res) => {
     const collection = connection_1.db.vital_sings;
     await collection.find().exec().then((documents) => {
         res.status(200).json(documents);

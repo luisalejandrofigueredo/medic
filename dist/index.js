@@ -113,13 +113,13 @@ const PORT = process.env.PORT || 3000;
 app.use(express_1.default.static(path.join(__dirname, 'public')));
 app.use(express_1.default.json());
 app.use((0, cors_1.default)({ origin: '*' }));
-app.use('/emergency', authenticateUser, add_1.addRouter);
+app.use('/emergency', authenticateUser, add_1.emergenRouter);
 app.use('/medication', authenticateUser, medication_1.medicationRouter);
 app.use('/history', authenticateUser, history_1.historyRouter);
 app.use('/chat', authenticateUser, chat_1.chatRouter);
 app.use('/message', authenticateUser, message_1.messageRouter);
 app.get('/', authenticateUser, (req, res) => {
-    res.status(403).send('Hola mundo');
+    res.status(403).send('Server is up');
 });
 // Start the server
 (async () => {

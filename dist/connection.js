@@ -282,7 +282,7 @@ const initDatabase = async () => {
                         type: "number",
                         minimum: 0,
                         maximum: 100000000000000,
-                        multipleOf: .001
+                        multipleOf: 1
                     },
                     message: {
                         type: "string",

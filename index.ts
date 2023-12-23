@@ -11,18 +11,14 @@ import {
   getRxStorageMemory
 } from 'rxdb/plugins/storage-memory';
 import { setDB, db } from "./connection";
-import { addRouter } from "./add";
+import { emergenRouter } from "./add";
 import { medicationRouter } from "./medication";
 import { historyRouter } from "./history";
 import { chatRouter } from "./chat";
 import { messageRouter } from "./message";
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
-import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, } from "firebase/auth";
-import { DecodedIdToken } from 'firebase-admin/lib/auth/token-verifier';
-import * as firebase from 'firebase/app';
+import { GoogleAuthProvider, User } from "firebase/auth";
 import * as admin from 'firebase-admin';
-
 import 'firebase/auth';
 
 
@@ -38,7 +34,7 @@ let allowedMACs: { macaddress: string }[] = [];
 const serviceAccount = require('./serviceAccountKey.json');
 
 interface ExtendedRequest extends express.Request {
-  user?: DecodedIdToken;
+  user?: User;
 }
 
 app.use((req: Request, res: Response, next) => {
@@ -106,7 +102,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cors({ origin: '*' }));
-app.use('/emergency',authenticateUser, addRouter);
+app.use('/emergency',authenticateUser, emergenRouter);
 app.use('/medication',authenticateUser, medicationRouter);
 app.use('/history',authenticateUser, historyRouter);
 app.use('/chat', authenticateUser,chatRouter);

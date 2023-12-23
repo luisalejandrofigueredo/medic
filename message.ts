@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { db } from "./connection";
-import { RxCollection, RxDocument, isRxDocument } from "rxdb";
+import { RxCollection, RxDocument, isRxDocument, isRxQuery } from "rxdb";
 const messageRouter = express.Router();
 
 messageRouter.post('/add', async (req: Request, res: Response) => {
@@ -38,14 +38,21 @@ messageRouter.get('/getFromToMessages', async (req: Request, res: Response) => {
   const from: string = req.query.from as string;
   const to: string = req.query.to as string;
   const collection = db.message;
+  console.log('from',from);
+  console.log('to',to);
   const query = await collection.find({
-    selector: { $or: [{ to: to }, { from: from },{ to: from },{ from: to }],$and: [{
-      hour:{ $: Date.now()-24*60*1000 }}] },
-    sort: [{ hour: 'desc' }]
-  });
-  await query.exec().then((documents: RxDocument[]) => {
-    res.status(200).json(documents);
-  });
+    selector: {
+      $or: [{ to: to }, { from: from }, { to: from }, { from: to }],
+      sort: [{ hour: 'desc' }]
+  }})
+  console.log('is query ',isRxQuery(query))
+  try {
+    const result=await query.exec();
+    console.log(result);
+    res.status(200).json(result);
+  } catch (error) {
+    console.log(error)
+  }
 })
 
 export { messageRouter };

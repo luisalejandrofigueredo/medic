@@ -38,21 +38,28 @@ messageRouter.get('/getFromToMessages', async (req: Request, res: Response) => {
   const from: string = req.query.from as string;
   const to: string = req.query.to as string;
   const collection = db.message;
-  console.log('from',from);
-  console.log('to',to);
-  const query = await collection.find({
-    selector: {
-      $or: [{ to: to }, { from: from }, { to: from }, { from: to }],
+  console.log('from', from);
+  console.log('to', to);
+  const date=new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  console.log('date',date);
+  if (from !== "" && to !== "") {
+    const query={
+      selector: {
+          $or: [{ to: to }, { from: from }, { to: from }, { from: to } ],$and:[{hour: { $gte: date}}]
+      },
       sort: [{ hour: 'desc' }]
-  }})
-  console.log('is query ',isRxQuery(query))
-  try {
-    const result=await query.exec();
-    console.log(result);
-    res.status(200).json(result);
-  } catch (error) {
-    console.log(error)
+    };
+    const execute = await collection.find(query);
+    try {
+      const result = await execute.exec();
+      res.status(200).json(result);
+    } catch (error) {
+      console.log(error)
+    }
+  } else {
+    res.status(200).json([]);
   }
 })
+
 
 export { messageRouter };

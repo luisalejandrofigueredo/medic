@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.messageRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const connection_1 = require("./connection");
-const rxdb_1 = require("rxdb");
 const messageRouter = express_1.default.Router();
 exports.messageRouter = messageRouter;
 messageRouter.post('/add', async (req, res) => {
@@ -43,19 +42,25 @@ messageRouter.get('/getFromToMessages', async (req, res) => {
     const collection = connection_1.db.message;
     console.log('from', from);
     console.log('to', to);
-    const query = await collection.find({
-        selector: {
-            $or: [{ to: to, hour: { gt$: Date.now() - 24 * 60 * 60 * 1000 } }, { from: from, hour: { gt$: Date.now() - 24 * 60 * 60 * 1000 } }, { to: from, hour: { gt$: Date.now() - 24 * 60 * 60 * 1000 } }, { from: to, hour: { gt$: Date.now() - 24 * 60 * 60 * 1000 } }]
-        },
-        sort: [{ hour: 'desc' }]
-    });
-    console.log('is query ', (0, rxdb_1.isRxQuery)(query));
-    try {
-        const result = await query.exec();
-        console.log(result);
-        res.status(200).json(result);
+    const date = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    console.log('date', date);
+    if (from !== "" && to !== "") {
+        const query = {
+            selector: {
+                $or: [{ to: to }, { from: from }, { to: from }, { from: to }], $and: [{ hour: { $gte: date } }]
+            },
+            sort: [{ hour: 'desc' }]
+        };
+        const execute = await collection.find(query);
+        try {
+            const result = await execute.exec();
+            res.status(200).json(result);
+        }
+        catch (error) {
+            console.log(error);
+        }
     }
-    catch (error) {
-        console.log('error', error);
+    else {
+        res.status(200).json([]);
     }
 });

@@ -274,20 +274,19 @@ const initDatabase = async () => {
           },
           to: {
             type: "string",
+            format:"date-time",
             maxLength: 100
           },
           hour: {
-            type: "number",
-            minimum:0,
-            maximum:100000000000000,
-            multipleOf:1
+            type: "string",
+            maxLength:100,
           },
           message: {
             type: "string",
             maxLength: 100
           }
         },
-        required: [],
+        required: ['id','from','to','hour','message'],
         indexes: ['from','to','hour',['to','from','hour']]
       },
       statics: {

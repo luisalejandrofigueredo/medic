@@ -1,17 +1,14 @@
-import express, { Express, Request, Response, NextFunction, json } from 'express';
+import express, { Express, Request, Response, NextFunction } from 'express';
 import * as http from 'http';
 import * as path from 'path';
-import { Server, Socket } from 'socket.io';
-import { RxDocument, createRxDatabase } from 'rxdb';
+import { Server } from 'socket.io';
+import { RxDocument } from 'rxdb';
 import { addRxPlugin } from 'rxdb';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update';
 import cors from "cors";
-import {
-  getRxStorageMemory
-} from 'rxdb/plugins/storage-memory';
 import { setDB, db } from "./connection";
-import { emergenRouter } from "./add";
+import { vital_signRouter } from "./vital_sings";
 import { medicationRouter } from "./medication";
 import { historyRouter } from "./history";
 import { chatRouter } from "./chat";
@@ -102,7 +99,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cors({ origin: '*' }));
-app.use('/emergency',authenticateUser, emergenRouter);
+app.use('/emergency',authenticateUser, vital_signRouter);
 app.use('/medication',authenticateUser, medicationRouter);
 app.use('/history',authenticateUser, historyRouter);
 app.use('/chat', authenticateUser,chatRouter);

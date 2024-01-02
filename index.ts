@@ -16,10 +16,13 @@ import { messageRouter } from "./message";
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { GoogleAuthProvider, User } from "firebase/auth";
 import * as admin from 'firebase-admin';
+import { port1,port2,parser1,parser2,getPulse } from "./serialDriver";
 import 'firebase/auth';
 
 
 const fs = require('fs/promises');
+
+
 const macaddress = require('macaddress');
 if (process.env.NODE_ENV === 'development') {
   addRxPlugin(RxDBDevModePlugin);
@@ -70,7 +73,7 @@ const authenticateUser = async (
   }
   else {
     try {
-      idToken=idToken.slice(7);
+      idToken = idToken.slice(7);
       await admin.auth().verifyIdToken(idToken!)
       next();
     } catch (error: any) {
@@ -83,8 +86,7 @@ const authenticateUser = async (
     }
   }
 }
-
-
+// socket server
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -93,19 +95,36 @@ const io = new Server(server, {
   }
 });
 
+//serial module
+parser1.on('data', (line: string) => {
+  console.log('Mensaje recibido en puerto 1:', line);
+  if (getPulse(line)!==-1){
+    
+  }
+  io.emit('newSerialMessagePort1', line);
+});
+
+// Cuando se recibe un mensaje en el puerto 2, reenviar al puerto 1
+parser2.on('data', (line: string) => {
+  console.log('Mensaje recibido en puerto 2:', line);
+  io.emit('newSerialMessagePort2', line);
+});
+
+//end serial module
+
 
 
 const PORT = process.env.PORT || 3000;
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(cors({ origin: '*' }));
-app.use('/emergency',authenticateUser, vital_signRouter);
-app.use('/medication',authenticateUser, medicationRouter);
-app.use('/history',authenticateUser, historyRouter);
-app.use('/chat', authenticateUser,chatRouter);
-app.use('/message', authenticateUser,messageRouter);
+app.use('/emergency', authenticateUser, vital_signRouter);
+app.use('/medication', authenticateUser, medicationRouter);
+app.use('/history', authenticateUser, historyRouter);
+app.use('/chat', authenticateUser, chatRouter);
+app.use('/message', authenticateUser, messageRouter);
 app.get('/', authenticateUser, (req: ExtendedRequest, res) => {
-    res.status(403).send('Server is up');
+  res.status(403).send('Server is up');
 });
 
 // Start the server
@@ -113,7 +132,7 @@ app.get('/', authenticateUser, (req: ExtendedRequest, res) => {
   try {
     const appFirebaseAuth = admin.initializeApp(serviceAccount);
   } catch (error) {
-    console.log('error',error)
+    console.log('error', error)
   }
   const setDb = await setDB();
   fs.readFile('macaddress.json', 'utf8')
@@ -126,6 +145,7 @@ app.get('/', authenticateUser, (req: ExtendedRequest, res) => {
   db.vital_sings.$.subscribe((changeEvent: RxDocument) => {
     io.emit('dataChange', changeEvent);
   });
+  port1.write('Hola desde el puerto 1!\n');
   db.vital_sings.insert$.subscribe((insertEvent: RxDocument) => io.emit('insertRecord', insertEvent));
   db.vital_sings.update$.subscribe((updateEvent: RxDocument) => io.emit('updateRecord', updateEvent));
   db.vital_sings.remove$.subscribe((removeEvent: RxDocument) => io.emit('deleteRecord', removeEvent));

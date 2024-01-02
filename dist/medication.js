@@ -13,7 +13,6 @@ medicationRouter.delete('/delete', async (req, res) => {
     const collection = connection_1.db.medication;
     await collection.findOne(id).exec().then(async (document) => {
         await document.remove().then(async (doc) => {
-            console.log('idPatient', doc.get("idPatient"));
             await collection.renumber(doc.get("idPatient")).then((documents) => {
                 res.status(200).json(doc);
             }).catch((_error) => { console.log('error en renumber'); });

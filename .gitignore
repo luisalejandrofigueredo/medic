@@ -1,3 +1,4 @@
 node_modules
 macaddress.json
 serviceAccountKey.json
+dist
